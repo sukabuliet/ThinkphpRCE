@@ -23,12 +23,15 @@ headers = {
 
 def proxy_get(host, proxy):
     if proxy:
-        proxy_active = proxy
         proxies = random.choice(proxy)
         proxies_use = {"http": "http://{}".format(proxies.strip('\n')), "https": "https://{}".format(proxies.strip('\n'))}
         try:
-            res  = requests.get(url=host, headers=headers, verify=False, proxies=proxies_use, timeout=5)
-            sta_code = res.status_code
+            res = requests.get(url=host, headers=headers, verify=False, proxies=proxies_use, timeout=5)
+            res.encoding = 'utf-8'
+            if res.status_code == 500 and 'ThinkPHP' in res.text:
+                sta_code = 200
+            else:
+                sta_code = res.status_code
         except:
             sta_code = 100
         while sta_code != 200: 
@@ -468,5 +471,5 @@ if __name__ == "__main__":
                 if args.shell:
                     getshell(url,proxy)
             count = count +1
-            print("进度:{0}%".format(round(count * 100 / len(host))), end="\r")
+            print("进度:{0}%".format(round(count * 100 / len(host))), end='\r')
             time.sleep(0.2)
